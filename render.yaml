@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: dolanda-event-solutions
+    name: Dalvin
     runtime: node
     region: singapore
     plan: free
@@ -16,9 +16,3 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-
-databases:
-  - name: dolanda-production-db
-    plan: free
-    region: singapore
-    postgresMajorVersion: '18'
