@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: dolanda-event-solutions
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: cd dolanda && npm install
+    startCommand: cd dolanda && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dolanda-production-db
+          property: connectionString
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+databases:
+  - name: dolanda-production-db
+    plan: free
+    region: singapore
+    postgresMajorVersion: '18'
