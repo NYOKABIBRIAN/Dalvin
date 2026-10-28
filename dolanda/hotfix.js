@@ -5,7 +5,25 @@
   window.openWhatsApp=function(index,text){const c=contacts()[Number(index)],n=normalize(c&&c.number);if(!/^254\d{9}$/.test(n)){alert('WhatsApp contact is not configured correctly.');return;}const msg=text||'Hello Dolanda Company, I would like to enquire about purchasing event equipment.';window.location.href='https://wa.me/'+n+'?text='+encodeURIComponent(msg);};
 
   async function currentAdmin(){try{const r=await fetch('/api/admin/me',{credentials:'include',cache:'no-store'});if(!r.ok)return null;const d=await r.json();return d.user||null;}catch{return null;}}
-  async function openDashboardIfSignedIn(){const user=await currentAdmin();if(!user)return false;try{if(typeof window.renderAdmin==='function'){await window.renderAdmin();return true;}}catch(e){console.error('Admin dashboard failed to render:',e);alert('The administrator session is valid, but the dashboard could not be loaded. Please refresh once.');}return false;}
+
+  function ensureAdminModal(){
+    let modal=document.getElementById('modal');
+    if(!modal){
+      modal=document.createElement('div');
+      modal.id='modal'; modal.className='modal';
+      modal.innerHTML='<div class="modalbox" id="modalbox"></div>';
+      modal.addEventListener('click',function(e){if(e.target===modal)window.closeM&&window.closeM();});
+      document.body.appendChild(modal);
+    }else if(!document.getElementById('modalbox')){
+      const box=document.createElement('div'); box.className='modalbox'; box.id='modalbox'; modal.appendChild(box);
+    }
+    return modal;
+  }
+
+  window.openM=function(html){const modal=ensureAdminModal(),box=document.getElementById('modalbox');box.innerHTML=html;modal.classList.add('show');};
+  window.closeM=function(){const modal=document.getElementById('modal');if(modal)modal.classList.remove('show');};
+
+  async function openDashboardIfSignedIn(){const user=await currentAdmin();if(!user)return false;try{if(typeof window.renderAdmin==='function'){await window.renderAdmin();ensureAdminModal();return true;}}catch(e){console.error('Admin dashboard failed to render:',e);alert('The administrator session is valid, but the dashboard could not be loaded. Please refresh once.');}return false;}
 
   function showLogin(){
     let box=document.getElementById('dolanda-admin-login');
@@ -21,5 +39,10 @@
 
   document.addEventListener('click',async function(e){const btn=e.target.closest&&e.target.closest('button.admin');if(!btn)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();try{if(!(await openDashboardIfSignedIn()))showLogin();}catch(err){console.error(err);alert('Unable to open Admin dashboard. Please refresh the page and try again.');}},true);
   document.addEventListener('click',function(e){const btn=e.target.closest&&e.target.closest('[data-whatsapp-index]');if(!btn)return;e.preventDefault();const i=Number(btn.getAttribute('data-whatsapp-index'));window.openWhatsApp(i,btn.getAttribute('data-whatsapp-message')||undefined);},true);
-  window.addEventListener('load',()=>{setTimeout(()=>{const path=location.pathname;if(path==='/'||path==='/index.html'){}},0);});
+
+  // The dashboard replaces document.body, which removes the public modal element.
+  // Recreate it automatically so every Add/Edit/Details action keeps working.
+  const observer=new MutationObserver(()=>{if(document.querySelector('.adminpage'))ensureAdminModal();});
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  window.addEventListener('load',()=>{if(document.querySelector('.adminpage'))ensureAdminModal();});
 })();
