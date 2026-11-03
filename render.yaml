@@ -5,7 +5,7 @@ services:
     region: singapore
     plan: free
     domains:
-      - dolanda.site.je
+      - dolandacompany.com
     buildCommand: cd dolanda && npm install
     startCommand: cd dolanda && npm start
     healthCheckPath: /health
